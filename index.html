@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Ahorro Splits CAE </title>
+  <title>Ahorro Splits Hotel</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 20px; background:#f5f5f5; }
-    h1 { margin-top: 0; }
+    h1 { margin: 0 0 4px 0; }
     .grid { display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:flex-start; }
     .card { background:#fff; padding:15px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
     table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -21,17 +21,27 @@
     .value { font-size:16px; font-weight:600; }
     #addEquipo { margin-top:8px; padding:6px 10px; font-size:12px; border-radius:4px; border:1px solid #1976d2; background:#2196f3; color:#fff; cursor:pointer; }
     #addEquipo:hover { background:#1976d2; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:20px; }
+    header img { height:60px; border-radius:4px; }
     @media(max-width:900px){
       .grid { grid-template-columns:1fr; }
+      header { flex-direction:column; align-items:flex-start; }
     }
   </style>
 </head>
 <body>
-  <h1> Cálculo de ahorro energético TER040: Sustitución de generador de climatización por
-bomba de calor de accionamiento eléctrico </h1>
-  <p class="small">
-    Modifica los datos de los equipos y los parámetros de uso. Los cálculos y gráficos se actualizan automáticamente.
-  </p>
+  <header>
+    <div>
+      <h1>Cálculo de ahorro energético TER040: Sustitución de generador de climatización por bomba de calor de accionamiento eléctrico</h1>
+      <p class="small">
+        Modifica los datos de los equipos y los parámetros de uso. Los cálculos y gráficos se actualizan automáticamente.
+      </p>
+    </div>
+    <div>
+      <!-- Asegúrate de que logo_ona1.jpg está en la misma carpeta que este index.html -->
+      <img src="logo_ona1.jpg" alt="Ona Hotels">
+    </div>
+  </header>
 
   <div class="grid">
     <!-- IZQUIERDA: tabla de equipos + parámetros -->
@@ -161,7 +171,7 @@ bomba de calor de accionamiento eléctrico </h1>
   </div>
 
   <script>
-    // Fórmulas basadas en SEER/SCOP: Consumo = Potencia * horas * días / SEER o SCOP[web:33][web:39]
+    // Fórmulas basadas en SEER/SCOP[web:33][web:39]
     const inputsSelector = "input";
     const tabla = document.getElementById("tabla-equipos");
 
@@ -298,3 +308,5 @@ bomba de calor de accionamiento eléctrico </h1>
   </script>
 </body>
 </html>
+
+     

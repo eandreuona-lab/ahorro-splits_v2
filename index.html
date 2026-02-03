@@ -6,7 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 20px; background:#f5f5f5; }
-    h1 { margin: 0 0 4px 0; }
+    h1 { margin: 0 0 4px 0; font-size:26px; line-height:1.25; }
     .grid { display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:flex-start; }
     .card { background:#fff; padding:15px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
     table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -21,8 +21,14 @@
     .value { font-size:16px; font-weight:600; }
     #addEquipo { margin-top:8px; padding:6px 10px; font-size:12px; border-radius:4px; border:1px solid #1976d2; background:#2196f3; color:#fff; cursor:pointer; }
     #addEquipo:hover { background:#1976d2; }
-    header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:20px; }
-    header img { height:60px; border-radius:4px; }
+    header { 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      margin-bottom:10px; 
+      gap:20px; 
+    }
+    header img { height:50px; border-radius:4px; }
     @media(max-width:900px){
       .grid { grid-template-columns:1fr; }
       header { flex-direction:column; align-items:flex-start; }
@@ -38,7 +44,7 @@
       </p>
     </div>
     <div>
-      <!-- Asegúrate de que logo_ona1.jpg está en la misma carpeta que este index.html -->
+      <!-- logo_ona1.jpg debe estar en la misma carpeta que este index.html -->
       <img src="logo_ona1.jpg" alt="Ona Hotels">
     </div>
   </header>
@@ -308,5 +314,3 @@
   </script>
 </body>
 </html>
-
-     

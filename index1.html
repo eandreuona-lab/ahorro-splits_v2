@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ona Hotels - Cálculo Ahorro Energético</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* Paleta de colores corporativa Ona Hotels */
+    :root {
+      --ona-teal-dark: #006B7D;
+      --ona-teal: #008B9C;
+      --ona-teal-light: #00A8BD;
+      --ona-teal-lighter: #E0F4F7;
+      --ona-white: #FFFFFF;
+      --ona-grey-light: #F8F9FA;
+      --ona-grey: #E9ECEF;
+      --ona-grey-dark: #6C757D;
+      --ona-text: #212529;
+      --ona-border: #DEE2E6;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; 
+      padding: 0;
+      background: linear-gradient(135deg, var(--ona-grey-light) 0%, var(--ona-grey) 100%);
+      color: var(--ona-text);
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header con logo */
+    header { 
+      background: var(--ona-white);
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 107, 125, 0.08);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 25px;
+    }
+
+    header h1 { 
+      margin: 0 0 6px 0; 
+      font-size: 24px; 
+      font-weight: 600;
+      color: var(--ona-teal-dark);
+      line-height: 1.3;
+    }
+
+    header .subtitle {
+      font-size: 13px;
+      color: var(--ona-grey-dark);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    header img { 
+      height: 55px; 
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Grid layout */
+    .grid { 
+      display: grid; 
+      grid-template-columns: 1.8fr 1fr; 
+      gap: 25px; 
+      align-items: flex-start; 
+    }
+
+    /* Tarjetas */
+    .card { 
+      background: var(--ona-white);
+      padding: 24px 28px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 107, 125, 0.08);
+      border: 1px solid var(--ona-border);
+    }
+
+    .card h2 { 
+      margin: 0 0 18px 0; 
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ona-teal-dark);
+      border-bottom: 2px solid var(--ona-teal-light);
+      padding-bottom: 8px;
+    }
+
+    .card h3 {
+      margin: 24px 0 12px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ona-teal);
+    }
+
+    /* Tablas */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    th { 
+      background: linear-gradient(135deg, var(--ona-teal-dark) 0%, var(--ona-teal) 100%);
+      color: var(--ona-white);
+      padding: 10px 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+      border: none;
+    }
+
+    th:first-child {
+      border-top-left-radius: 6px;
+    }
+
+    th:last-child {
+      border-top-right-radius: 6px;
+    }
+
+    td { 
+      border: 1px solid var(--ona-border);
+      padding: 6px 8px;
+      text-align: center;
+      background: var(--ona-white);
+    }
+
+    tbody tr:hover {
+      background: var(--ona-teal-lighter);
+    }
+
+    /* Inputs */
+    input { 
+      width: 100%; 
+      box-sizing: border-box; 
+      padding: 4px 6px;
+      font-size: 12px;
+      border: 1px solid var(--ona-border);
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--ona-teal-light);
+      box-shadow: 0 0 0 2px rgba(0, 168, 189, 0.1);
+    }
+
+    input[type="text"] {
+      font-weight: 500;
+      color: var(--ona-teal-dark);
+    }
+
+    /* Botones */
+    .btn { 
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--ona-teal) 0%, var(--ona-teal-light) 100%);
+      color: var(--ona-white);
+      box-shadow: 0 2px 8px rgba(0, 139, 156, 0.25);
+    }
+
+    .btn-primary:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 139, 156, 0.35);
+    }
+
+    .btn-secondary {
+      background: var(--ona-white);
+      color: var(--ona-teal-dark);
+      border: 2px solid var(--ona-teal);
+      box-shadow: 0 2px 6px rgba(0, 107, 125, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: var(--ona-teal-lighter);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    /* Grid de resumen */
+    .summary-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .summary-item { 
+      background: linear-gradient(135deg, var(--ona-teal-lighter) 0%, var(--ona-white) 100%);
+      border-radius: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--ona-teal-light);
+      transition: all 0.3s;
+    }
+
+    .summary-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 168, 189, 0.15);
+    }
+
+    .summary-item span { 
+      display: block; 
+    }
+
+    .label { 
+      font-size: 11px;
+      color: var(--ona-grey-dark);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .value { 
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ona-teal-dark);
+      margin: 2px 0;
+    }
+
+    .small { 
+      font-size: 11px;
+      color: var(--ona-grey-dark);
+      margin-top: 2px;
+    }
+
+    .export-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 2px solid var(--ona-grey);
+    }
+
+    .export-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ona-teal);
+    }
+
+    /* Responsive */
+    @media(max-width: 1024px){
+      .grid { 
+        grid-template-columns: 1fr; 
+      }
+      header { 
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+      header img {
+        align-self: flex-start;
+      }
+    }
+
+    @media(max-width: 640px){
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      .main-container {
+        padding: 12px;
+      }
+      .btn-group {
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <header>
+      <div>
+        <h1>Cálculo de ahorro energético TER040: Sustitución de generador de climatización por bomba de calor de accionamiento eléctrico</h1>
+        <p class="subtitle">
+          Modifica los datos de los equipos y los parámetros de uso. Los cálculos y gráficos se actualizan automáticamente.
+        </p>
+      </div>
+      <div>
+        <img src="logo_ona1.jpg" alt="Ona Hotels" onerror="this.style.display='none'">
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- IZQUIERDA: tabla de equipos + parámetros -->
+      <div class="card">
+        <h2>Equipos</h2>
+        <table id="tabla-equipos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ubicación</th>
+              <th>Potencia nueva kW</th>
+              <th>SEER nuevo</th>
+              <th>SCOP nuevo</th>
+              <th>Potencia antigua kW</th>
+              <th>SEER/SCOP antiguo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <script>
+              for (let i=1;i<=9;i++){
+                document.write(`<tr>
+                  <td>${i}</td>
+                  <td><input type="text" value="Hab ${200 + i}" class="ubicacion"></td>
+                  <td><input type="number" value="5" step="0.1" class="nuevoP"></td>
+                  <td><input type="number" value="6.5" step="0.1" class="seerN"></td>
+                  <td><input type="number" value="4.5" step="0.1" class="scopN"></td>
+                  <td><input type="number" value="5" step="0.1" class="antP"></td>
+                  <td><input type="number" value="2.5" step="0.1" class="seerA"></td>
+                </tr>`);
+              }
+            </script>
+            <tr>
+              <td>10</td>
+              <td><input type="text" value="Sala reuniones" class="ubicacion"></td>
+              <td><input type="number" value="7" step="0.1" class="nuevoP"></td>
+              <td><input type="number" value="7" step="0.1" class="seerN"></td>
+              <td><input type="number" value="4.8" step="0.1" class="scopN"></td>
+              <td><input type="number" value="7" step="0.1" class="antP"></td>
+              <td><input type="number" value="2.3" step="0.1" class="seerA"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button id="addEquipo" class="btn btn-primary">+ Añadir equipo</button>
+
+        <h2 style="margin-top:30px;">Parámetros de uso</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Horas frío/día</td>
+              <td style="width:120px;"><input type="number" id="hFrio" value="8" step="0.5"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">h/día</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Días frío/año</td>
+              <td><input type="number" id="dFrio" value="120" step="10"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">d/año</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Horas calor/día</td>
+              <td><input type="number" id="hCalor" value="6" step="0.5"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">h/día</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Días calor/año</td>
+              <td><input type="number" id="dCalor" value="90" step="10"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">d/año</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Precio electricidad</td>
+              <td><input type="number" id="precio" value="0.15" step="0.01"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">€/kWh</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; font-weight:600; padding-left:12px;">Factor CO₂</td>
+              <td><input type="number" id="factorCO2" value="0.3" step="0.01"></td>
+              <td class="small" style="text-align:left; padding-left:8px;">kg CO₂/kWh</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="export-section">
+          <h3>📥 Exportar datos</h3>
+          <div class="btn-group">
+            <button id="exportExcel" class="btn btn-secondary">📊 Exportar Excel</button>
+            <button id="exportCSV" class="btn btn-secondary">📄 Exportar CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DERECHA: resumen + gráficos -->
+      <div class="card">
+        <h2>Resumen</h2>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Consumo antiguo</span>
+            <span class="value" id="kwhAntiguo">-</span>
+            <span class="small">kWh/año</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Consumo nuevo</span>
+            <span class="value" id="kwhNuevo">-</span>
+            <span class="small">kWh/año</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Ahorro absoluto</span>
+            <span class="value" id="kwhAhorro">-</span>
+            <span class="small">kWh/año</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Ahorro relativo</span>
+            <span class="value" id="ahorroPct">-</span>
+            <span class="small">% sobre consumo antiguo</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Ahorro económico</span>
+            <span class="value" id="ahorroEuros">-</span>
+            <span class="small">€/año</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">CO₂ evitado</span>
+            <span class="value" id="co2">-</span>
+            <span class="small">kg CO₂/año</span>
+          </div>
+        </div>
+
+        <h3>Consumo anual kWh</h3>
+        <canvas id="chartKwh" height="140"></canvas>
+
+        <h3>Coste anual €</h3>
+        <canvas id="chartCoste" height="140"></canvas>
+
+        <div class="export-section">
+          <h3>📑 Exportar informe</h3>
+          <button id="exportPDF" class="btn btn-primary" style="width:100%;">📥 Descargar PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputsSelector = "input";
+    const tabla = document.getElementById("tabla-equipos");
+    let chartKwh, chartCoste;
+    let datosCalculados = {};
+
+    function leerNumero(input, defecto=0){
+      const v = parseFloat(String(input.value).replace(",", "."));
+      return isNaN(v) ? defecto : v;
+    }
+
+    function recalcular(){
+      const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+      const hFrio  = leerNumero(document.getElementById("hFrio"));
+      const dFrio  = leerNumero(document.getElementById("dFrio"));
+      const hCalor = leerNumero(document.getElementById("hCalor"));
+      const dCalor = leerNumero(document.getElementById("dCalor"));
+      const precio = leerNumero(document.getElementById("precio"));
+      const factorCO2 = leerNumero(document.getElementById("factorCO2"));
+
+      let kwhAntiguoFrio=0, kwhNuevoFrio=0, kwhAntiguoCalor=0, kwhNuevoCalor=0;
+
+      filas.forEach(tr=>{
+        const nuevoP = leerNumero(tr.querySelector(".nuevoP"));
+        const seerN  = leerNumero(tr.querySelector(".seerN"));
+        const scopN  = leerNumero(tr.querySelector(".scopN"));
+        const antP   = leerNumero(tr.querySelector(".antP"));
+        const seerA  = leerNumero(tr.querySelector(".seerA"));
+
+        if (antP>0 && seerA>0){
+          kwhAntiguoFrio  += antP * hFrio  * dFrio  / seerA;
+          kwhAntiguoCalor += antP * hCalor * dCalor / seerA;
+        }
+        if (nuevoP>0 && seerN>0 && scopN>0){
+          kwhNuevoFrio  += nuevoP * hFrio  * dFrio  / seerN;
+          kwhNuevoCalor += nuevoP * hCalor * dCalor / scopN;
+        }
+      });
+
+      const kwhAntiguo = kwhAntiguoFrio + kwhAntiguoCalor;
+      const kwhNuevo   = kwhNuevoFrio   + kwhNuevoCalor;
+      const kwhAhorro  = kwhAntiguo - kwhNuevo;
+      const ahorroPct  = kwhAntiguo>0 ? (kwhAhorro / kwhAntiguo * 100) : 0;
+      const costeAnt   = kwhAntiguo * precio;
+      const costeNuevo = kwhNuevo   * precio;
+      const ahorroEur  = costeAnt - costeNuevo;
+      const co2        = kwhAhorro * factorCO2;
+
+      // Guardar datos para exportación
+      datosCalculados = {
+        kwhAntiguo, kwhNuevo, kwhAhorro, ahorroPct,
+        costeAnt, costeNuevo, ahorroEur, co2,
+        kwhAntiguoFrio, kwhAntiguoCalor,
+        kwhNuevoFrio, kwhNuevoCalor,
+        hFrio, dFrio, hCalor, dCalor, precio, factorCO2
+      };
+
+      document.getElementById("kwhAntiguo").textContent = kwhAntiguo.toFixed(0);
+      document.getElementById("kwhNuevo").textContent   = kwhNuevo.toFixed(0);
+      document.getElementById("kwhAhorro").textContent  = kwhAhorro.toFixed(0);
+      document.getElementById("ahorroPct").textContent  = ahorroPct.toFixed(1) + " %";
+      document.getElementById("ahorroEuros").textContent= ahorroEur.toFixed(0);
+      document.getElementById("co2").textContent        = co2.toFixed(0);
+
+      const kwhDataOldNew = [kwhAntiguoFrio, kwhAntiguoCalor, kwhAntiguo,
+                             kwhNuevoFrio,  kwhNuevoCalor,  kwhNuevo];
+      const labelsKwh = ["Frío antiguo","Calor antiguo","Total antiguo",
+                         "Frío nuevo","Calor nuevo","Total nuevo"];
+
+      const costeOldNew = [costeAnt, costeNuevo];
+
+      if (chartKwh) chartKwh.destroy();
+      if (chartCoste) chartCoste.destroy();
+
+      const ctx1 = document.getElementById("chartKwh").getContext("2d");
+      chartKwh = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labelsKwh,
+          datasets: [{
+            label: 'kWh/año',
+            data: kwhDataOldNew,
+            backgroundColor: [
+              '#FF6B6B','#FFA07A','#FF4500',
+              '#00A8BD','#5ED4E0','#006B7D'
+            ]
+          }]
+        },
+        options: {
+          responsive:true,
+          scales:{ y:{ beginAtZero:true } },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById("chartCoste").getContext("2d");
+      chartCoste = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ["Coste antiguo","Coste nuevo"],
+          datasets: [{
+            label: '€/año',
+            data: costeOldNew,
+            backgroundColor: ['#FF6B6B','#006B7D']
+          }]
+        },
+        options: {
+          responsive:true,
+          scales:{ y:{ beginAtZero:true } },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // Exportar a PDF
+    document.getElementById("exportPDF").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(16);
+      doc.setTextColor(0, 107, 125);
+      doc.text("Informe de Ahorro Energético", 20, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(108, 117, 125);
+      doc.text("TER040: Sustitución climatización - Ona Hotels", 20, 28);
+      
+      doc.setDrawColor(0, 168, 189);
+      doc.line(20, 32, 190, 32);
+      
+      // Resumen
+      doc.setFontSize(14);
+      doc.setTextColor(0, 107, 125);
+      doc.text("Resumen Ejecutivo", 20, 42);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(33, 37, 41);
+      doc.text(`Consumo antiguo: ${datosCalculados.kwhAntiguo.toFixed(0)} kWh/año`, 25, 52);
+      doc.text(`Consumo nuevo: ${datosCalculados.kwhNuevo.toFixed(0)} kWh/año`, 25, 59);
+      doc.text(`Ahorro energético: ${datosCalculados.kwhAhorro.toFixed(0)} kWh/año (${datosCalculados.ahorroPct.toFixed(1)}%)`, 25, 66);
+      doc.text(`Ahorro económico: ${datosCalculados.ahorroEur.toFixed(0)} €/año`, 25, 73);
+      doc.text(`CO₂ evitado: ${datosCalculados.co2.toFixed(0)} kg CO₂/año`, 25, 80);
+      
+      // Parámetros
+      doc.setFontSize(14);
+      doc.setTextColor(0, 107, 125);
+      doc.text("Parámetros de Cálculo", 20, 95);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(33, 37, 41);
+      doc.text(`Refrigeración: ${datosCalculados.hFrio}h/día × ${datosCalculados.dFrio} días/año`, 25, 105);
+      doc.text(`Calefacción: ${datosCalculados.hCalor}h/día × ${datosCalculados.dCalor} días/año`, 25, 112);
+      doc.text(`Precio electricidad: ${datosCalculados.precio.toFixed(3)} €/kWh`, 25, 119);
+      doc.text(`Factor CO₂: ${datosCalculados.factorCO2} kg CO₂/kWh`, 25, 126);
+      
+      // Equipos (tabla simplificada)
+      doc.setFontSize(14);
+      doc.setTextColor(0, 107, 125);
+      doc.text("Equipos Sustituidos", 20, 141);
+      
+      const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+      let y = 151;
+      doc.setFontSize(9);
+      doc.setTextColor(33, 37, 41);
+      
+      filas.slice(0, 10).forEach((tr, i) => {
+        const ubi = tr.querySelector(".ubicacion").value;
+        const potNueva = leerNumero(tr.querySelector(".nuevoP"));
+        const seerN = leerNumero(tr.querySelector(".seerN"));
+        doc.text(`${i+1}. ${ubi} - ${potNueva}kW (SEER ${seerN})`, 25, y);
+        y += 6;
+      });
+      
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(108, 117, 125);
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')}`, 20, 285);
+      doc.text("Ona Hotels & Apartments", 150, 285);
+      
+      doc.save("Informe_Ahorro_Energetico.pdf");
+    });
+
+    // Exportar a Excel
+    document.getElementById("exportExcel").addEventListener("click", () => {
+      const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+      let excel_content = `
+        <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <head><meta charset="UTF-8"></head>
+        <body>
+          <table border="1">
+            <thead>
+              <tr style="background-color:#006B7D;color:white;font-weight:bold;">
+                <th>#</th><th>Ubicación</th><th>Potencia nueva (kW)</th>
+                <th>SEER nuevo</th><th>SCOP nuevo</th>
+                <th>Potencia antigua (kW)</th><th>SEER/SCOP antiguo</th>
+              </tr>
+            </thead>
+            <tbody>`;
+      
+      filas.forEach((tr, i) => {
+        excel_content += `<tr>
+          <td>${i+1}</td>
+          <td>${tr.querySelector(".ubicacion").value}</td>
+          <td>${leerNumero(tr.querySelector(".nuevoP"))}</td>
+          <td>${leerNumero(tr.querySelector(".seerN"))}</td>
+          <td>${leerNumero(tr.querySelector(".scopN"))}</td>
+          <td>${leerNumero(tr.querySelector(".antP"))}</td>
+          <td>${leerNumero(tr.querySelector(".seerA"))}</td>
+        </tr>`;
+      });
+      
+      excel_content += `</tbody></table>
+        <br><br>
+        <table border="1">
+          <thead>
+            <tr style="background-color:#006B7D;color:white;font-weight:bold;">
+              <th>Concepto</th><th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Consumo antiguo</td><td>${datosCalculados.kwhAntiguo.toFixed(0)} kWh/año</td></tr>
+            <tr><td>Consumo nuevo</td><td>${datosCalculados.kwhNuevo.toFixed(0)} kWh/año</td></tr>
+            <tr><td>Ahorro energético</td><td>${datosCalculados.kwhAhorro.toFixed(0)} kWh/año</td></tr>
+            <tr><td>Ahorro porcentual</td><td>${datosCalculados.ahorroPct.toFixed(1)}%</td></tr>
+            <tr><td>Ahorro económico</td><td>${datosCalculados.ahorroEur.toFixed(0)} €/año</td></tr>
+            <tr><td>CO₂ evitado</td><td>${datosCalculados.co2.toFixed(0)} kg CO₂/año</td></tr>
+          </tbody>
+        </table>
+        </body></html>`;
+      
+      const file = new Blob([excel_content], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      const a = document.createElement('a');
+      a.download = "Ahorro_Energetico_OnaHotels.xls";
+      a.href = window.URL.createObjectURL(file);
+      a.click();
+    });
+
+    // Exportar a CSV
+    document.getElementById("exportCSV").addEventListener("click", () => {
+      const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+      let csv = [];
+      
+      // Encabezados
+      csv.push(["#","Ubicación","Potencia nueva kW","SEER nuevo","SCOP nuevo","Potencia antigua kW","SEER/SCOP antiguo"].join(","));
+      
+      // Datos equipos
+      filas.forEach((tr, i) => {
+        const row = [
+          i+1,
+          `"${tr.querySelector(".ubicacion").value}"`,
+          leerNumero(tr.querySelector(".nuevoP")),
+          leerNumero(tr.querySelector(".seerN")),
+          leerNumero(tr.querySelector(".scopN")),
+          leerNumero(tr.querySelector(".antP")),
+          leerNumero(tr.querySelector(".seerA"))
+        ];
+        csv.push(row.join(","));
+      });
+      
+      // Resumen
+      csv.push("");
+      csv.push("RESUMEN");
+      csv.push(`"Consumo antiguo",${datosCalculados.kwhAntiguo.toFixed(0)},"kWh/año"`);
+      csv.push(`"Consumo nuevo",${datosCalculados.kwhNuevo.toFixed(0)},"kWh/año"`);
+      csv.push(`"Ahorro energético",${datosCalculados.kwhAhorro.toFixed(0)},"kWh/año"`);
+      csv.push(`"Ahorro porcentual",${datosCalculados.ahorroPct.toFixed(1)},"%"`);
+      csv.push(`"Ahorro económico",${datosCalculados.ahorroEur.toFixed(0)},"€/año"`);
+      csv.push(`"CO₂ evitado",${datosCalculados.co2.toFixed(0)},"kg CO₂/año"`);
+      
+      const csvContent = csv.join("\n");
+      const file = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.download = "Ahorro_Energetico_OnaHotels.csv";
+      a.href = window.URL.createObjectURL(file);
+      a.click();
+    });
+
+    // Botón añadir equipo
+    document.getElementById("addEquipo").addEventListener("click", () => {
+      const tbody = tabla.querySelector("tbody");
+      const filas = Array.from(tbody.querySelectorAll("tr"));
+      const n = filas.length + 1;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${n}</td>
+        <td><input type="text" value="Equipo ${n}" class="ubicacion"></td>
+        <td><input type="number" value="5" step="0.1" class="nuevoP"></td>
+        <td><input type="number" value="6.5" step="0.1" class="seerN"></td>
+        <td><input type="number" value="4.5" step="0.1" class="scopN"></td>
+        <td><input type="number" value="5" step="0.1" class="antP"></td>
+        <td><input type="number" value="2.5" step="0.1" class="seerA"></td>
+      `;
+      tbody.appendChild(tr);
+
+      tr.querySelectorAll("input").forEach(inp => {
+        inp.addEventListener("input", recalcular);
+      });
+
+      recalcular();
+    });
+
+    document.querySelectorAll(inputsSelector).forEach(inp=>{
+      inp.addEventListener("input", recalcular);
+    });
+
+    window.addEventListener("load", recalcular);
+  </script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ahorro Splits Hotel</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 20px; background:#f5f5f5; }
+    h1 { margin-top: 0; }
+    .grid { display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:flex-start; }
+    .card { background:#fff; padding:15px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { border:1px solid #ddd; padding:4px 6px; text-align:center; }
+    th { background:#eceff1; }
+    input { width:100%; box-sizing:border-box; padding:2px 4px; font-size:12px; }
+    .small { font-size:11px; color:#555; }
+    .summary-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    .summary-item { background:#fafafa; border-radius:6px; padding:8px 10px; border:1px solid #ddd; }
+    .summary-item span { display:block; }
+    .label { font-size:11px; color:#666; }
+    .value { font-size:16px; font-weight:600; }
+    #addEquipo { margin-top:8px; padding:6px 10px; font-size:12px; border-radius:4px; border:1px solid #1976d2; background:#2196f3; color:#fff; cursor:pointer; }
+    #addEquipo:hover { background:#1976d2; }
+    @media(max-width:900px){
+      .grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Ahorro energético sustitución splits hotel</h1>
+  <p class="small">
+    Modifica los datos de los equipos y los parámetros de uso. Los cálculos y gráficos se actualizan automáticamente.
+  </p>
+
+  <div class="grid">
+    <!-- IZQUIERDA: tabla de equipos + parámetros -->
+    <div class="card">
+      <h2>Equipos</h2>
+      <table id="tabla-equipos">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ubicación</th>
+            <th>Potencia nueva kW</th>
+            <th>SEER nuevo</th>
+            <th>SCOP nuevo</th>
+            <th>Potencia antigua kW</th>
+            <th>SEER/SCOP antiguo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 9 filas iniciales -->
+          <script>
+            for (let i=1;i<=9;i++){
+              document.write(`<tr>
+                <td>${i}</td>
+                <td><input type="text" value="Hab ${200 + i}" class="ubicacion"></td>
+                <td><input type="number" value="5" step="0.1" class="nuevoP"></td>
+                <td><input type="number" value="6.5" step="0.1" class="seerN"></td>
+                <td><input type="number" value="4.5" step="0.1" class="scopN"></td>
+                <td><input type="number" value="5" step="0.1" class="antP"></td>
+                <td><input type="number" value="2.5" step="0.1" class="seerA"></td>
+              </tr>`);
+            }
+          </script>
+          <!-- Sala reuniones -->
+          <tr>
+            <td>10</td>
+            <td><input type="text" value="Sala reuniones" class="ubicacion"></td>
+            <td><input type="number" value="7" step="0.1" class="nuevoP"></td>
+            <td><input type="number" value="7" step="0.1" class="seerN"></td>
+            <td><input type="number" value="4.8" step="0.1" class="scopN"></td>
+            <td><input type="number" value="7" step="0.1" class="antP"></td>
+            <td><input type="number" value="2.3" step="0.1" class="seerA"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button id="addEquipo">Añadir equipo</button>
+
+      <h2>Parámetros de uso</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>Horas frío/día</td>
+            <td><input type="number" id="hFrio" value="8" step="0.5"></td>
+            <td class="small">h/día</td>
+          </tr>
+          <tr>
+            <td>Días frío/año</td>
+            <td><input type="number" id="dFrio" value="120" step="10"></td>
+            <td class="small">d/año</td>
+          </tr>
+          <tr>
+            <td>Horas calor/día</td>
+            <td><input type="number" id="hCalor" value="6" step="0.5"></td>
+            <td class="small">h/día</td>
+          </tr>
+          <tr>
+            <td>Días calor/año</td>
+            <td><input type="number" id="dCalor" value="90" step="10"></td>
+            <td class="small">d/año</td>
+          </tr>
+          <tr>
+            <td>Precio electricidad</td>
+            <td><input type="number" id="precio" value="0.15" step="0.01"></td>
+            <td class="small">€/kWh</td>
+          </tr>
+          <tr>
+            <td>Factor CO₂</td>
+            <td><input type="number" id="factorCO2" value="0.3" step="0.01"></td>
+            <td class="small">kg CO₂/kWh</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DERECHA: resumen + gráficos -->
+    <div class="card">
+      <h2>Resumen</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label">Consumo antiguo</span>
+          <span class="value" id="kwhAntiguo">-</span>
+          <span class="small">kWh/año</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Consumo nuevo</span>
+          <span class="value" id="kwhNuevo">-</span>
+          <span class="small">kWh/año</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Ahorro absoluto</span>
+          <span class="value" id="kwhAhorro">-</span>
+          <span class="small">kWh/año</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Ahorro relativo</span>
+          <span class="value" id="ahorroPct">-</span>
+          <span class="small">% sobre consumo antiguo</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Ahorro económico</span>
+          <span class="value" id="ahorroEuros">-</span>
+          <span class="small">€/año</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">CO₂ evitado</span>
+          <span class="value" id="co2">-</span>
+          <span class="small">kg CO₂/año</span>
+        </div>
+      </div>
+
+      <h3>Consumo anual kWh</h3>
+      <canvas id="chartKwh" height="140"></canvas>
+
+      <h3>Coste anual €</h3>
+      <canvas id="chartCoste" height="140"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Fórmulas basadas en SEER/SCOP: Consumo = Potencia * horas * días / SEER o SCOP[web:33][web:39]
+    const inputsSelector = "input";
+    const tabla = document.getElementById("tabla-equipos");
+
+    let chartKwh, chartCoste;
+
+    function leerNumero(input, defecto=0){
+      const v = parseFloat(String(input.value).replace(",", "."));
+      return isNaN(v) ? defecto : v;
+    }
+
+    function recalcular(){
+      const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+      const hFrio  = leerNumero(document.getElementById("hFrio"));
+      const dFrio  = leerNumero(document.getElementById("dFrio"));
+      const hCalor = leerNumero(document.getElementById("hCalor"));
+      const dCalor = leerNumero(document.getElementById("dCalor"));
+      const precio = leerNumero(document.getElementById("precio"));
+      const factorCO2 = leerNumero(document.getElementById("factorCO2"));
+
+      let kwhAntiguoFrio=0, kwhNuevoFrio=0, kwhAntiguoCalor=0, kwhNuevoCalor=0;
+
+      filas.forEach(tr=>{
+        const nuevoP = leerNumero(tr.querySelector(".nuevoP"));
+        const seerN  = leerNumero(tr.querySelector(".seerN"));
+        const scopN  = leerNumero(tr.querySelector(".scopN"));
+        const antP   = leerNumero(tr.querySelector(".antP"));
+        const seerA  = leerNumero(tr.querySelector(".seerA"));
+
+        if (antP>0 && seerA>0){
+          kwhAntiguoFrio  += antP * hFrio  * dFrio  / seerA;
+          kwhAntiguoCalor += antP * hCalor * dCalor / seerA; // mismo rendimiento en calor[web:24][web:33]
+        }
+        if (nuevoP>0 && seerN>0 && scopN>0){
+          kwhNuevoFrio  += nuevoP * hFrio  * dFrio  / seerN;
+          kwhNuevoCalor += nuevoP * hCalor * dCalor / scopN;
+        }
+      });
+
+      const kwhAntiguo = kwhAntiguoFrio + kwhAntiguoCalor;
+      const kwhNuevo   = kwhNuevoFrio   + kwhNuevoCalor;
+      const kwhAhorro  = kwhAntiguo - kwhNuevo;
+      const ahorroPct  = kwhAntiguo>0 ? (kwhAhorro / kwhAntiguo * 100) : 0;
+      const costeAnt   = kwhAntiguo * precio;
+      const costeNuevo = kwhNuevo   * precio;
+      const ahorroEur  = costeAnt - costeNuevo;
+      const co2        = kwhAhorro * factorCO2;
+
+      document.getElementById("kwhAntiguo").textContent = kwhAntiguo.toFixed(0);
+      document.getElementById("kwhNuevo").textContent   = kwhNuevo.toFixed(0);
+      document.getElementById("kwhAhorro").textContent  = kwhAhorro.toFixed(0);
+      document.getElementById("ahorroPct").textContent  = ahorroPct.toFixed(1) + " %";
+      document.getElementById("ahorroEuros").textContent= ahorroEur.toFixed(0);
+      document.getElementById("co2").textContent        = co2.toFixed(0);
+
+      const kwhDataOldNew = [kwhAntiguoFrio, kwhAntiguoCalor, kwhAntiguo,
+                             kwhNuevoFrio,  kwhNuevoCalor,  kwhNuevo];
+      const labelsKwh = ["Frío antiguo","Calor antiguo","Total antiguo",
+                         "Frío nuevo","Calor nuevo","Total nuevo"];
+
+      const costeOldNew = [costeAnt, costeNuevo];
+
+      if (chartKwh) chartKwh.destroy();
+      if (chartCoste) chartCoste.destroy();
+
+      const ctx1 = document.getElementById("chartKwh").getContext("2d");
+      chartKwh = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labelsKwh,
+          datasets: [{
+            label: 'kWh/año',
+            data: kwhDataOldNew,
+            backgroundColor: [
+              '#ff7043','#ffab91','#ff5722',
+              '#42a5f5','#90caf9','#1976d2'
+            ]
+          }]
+        },
+        options: {
+          responsive:true,
+          scales:{ y:{ beginAtZero:true } }
+        }
+      });
+
+      const ctx2 = document.getElementById("chartCoste").getContext("2d");
+      chartCoste = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ["Coste antiguo","Coste nuevo"],
+          datasets: [{
+            label: '€/año',
+            data: costeOldNew,
+            backgroundColor: ['#8e24aa','#ce93d8']
+          }]
+        },
+        options: {
+          responsive:true,
+          scales:{ y:{ beginAtZero:true } }
+        }
+      });
+    }
+
+    // Botón para añadir más equipos
+    document.getElementById("addEquipo").addEventListener("click", () => {
+      const tbody = tabla.querySelector("tbody");
+      const filas = Array.from(tbody.querySelectorAll("tr"));
+      const n = filas.length + 1;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${n}</td>
+        <td><input type="text" value="Equipo ${n}" class="ubicacion"></td>
+        <td><input type="number" value="5" step="0.1" class="nuevoP"></td>
+        <td><input type="number" value="6.5" step="0.1" class="seerN"></td>
+        <td><input type="number" value="4.5" step="0.1" class="scopN"></td>
+        <td><input type="number" value="5" step="0.1" class="antP"></td>
+        <td><input type="number" value="2.5" step="0.1" class="seerA"></td>
+      `;
+      tbody.appendChild(tr);
+
+      tr.querySelectorAll("input").forEach(inp => {
+        inp.addEventListener("input", recalcular);
+      });
+
+      recalcular();
+    });
+
+    // Escuchar cambios en todos los inputs iniciales
+    document.querySelectorAll(inputsSelector).forEach(inp=>{
+      inp.addEventListener("input", recalcular);
+    });
+
+    window.addEventListener("load", recalcular);
+  </script>
+</body>
+</html>
